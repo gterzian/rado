@@ -26,7 +26,6 @@ const (
 	Follower CMState = iota
 	Candidate
 	Leader
-	Dead
 )
 
 func (s CMState) String() string {
@@ -37,8 +36,6 @@ func (s CMState) String() string {
 		return "Candidate"
 	case Leader:
 		return "Leader"
-	case Dead:
-		return "Dead"
 	default:
 		panic("unreachable")
 	}
@@ -323,7 +320,7 @@ func NewConsensusModule(id int, peerIds []int, server *Server, ready <-chan inte
 		for {
 			select {
 			case <-cm.exit:
-				cm.Stop()
+				cm.dlog("Stopping")
 				return
 
 			case task := <-cm.taskQueue:
@@ -362,12 +359,6 @@ func NewConsensusModule(id int, peerIds []int, server *Server, ready <-chan inte
 // Report reports the state of this CM.
 func (cm *ConsensusModule) Report() (term int, isLeader bool) {
 	return cm.currentTerm, cm.state == Leader
-}
-
-// Stop stops this CM, cleaning up its state.
-func (cm *ConsensusModule) Stop() {
-	cm.state = Dead
-	cm.dlog("becomes Dead")
 }
 
 // dlog logs a debugging message is DebugCM > 0.
